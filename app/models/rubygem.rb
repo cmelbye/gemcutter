@@ -12,8 +12,10 @@ class Rubygem < ActiveRecord::Base
   end
   has_one :linkset, :dependent => :destroy
 
-  validates_presence_of :name
-  validates_uniqueness_of :name
+  validates_presence_of   :name
+  validates_uniqueness_of :name, :scope => :subdomain
+
+  validates_format_of :subdomain, :with => /\A[a-z]+\Z/, :allow_nil => true
 
   named_scope :with_versions, :conditions => ["versions_count > 0"]
   named_scope :with_one_version, :conditions => ["versions_count = 1"]

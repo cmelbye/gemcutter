@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091001153907) do
+ActiveRecord::Schema.define(:version => 20091008012511) do
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -77,6 +77,7 @@ ActiveRecord::Schema.define(:version => 20091001153907) do
     t.integer  "downloads",      :default => 0
     t.string   "slug"
     t.integer  "versions_count", :default => 0
+    t.string   "subdomain"
   end
 
   add_index "rubygems", ["name"], :name => "index_rubygems_on_name"
