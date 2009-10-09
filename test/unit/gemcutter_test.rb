@@ -39,6 +39,7 @@ class GemcutterTest < ActiveSupport::TestCase
       assert @cutter.respond_to?(:code)
       assert @cutter.respond_to?(:rubygem)
       assert @cutter.respond_to?(:body)
+      assert @cutter.respond_to?(:subdomain)
 
       assert_equal @user, @cutter.user
     end
@@ -46,7 +47,7 @@ class GemcutterTest < ActiveSupport::TestCase
     context "processing incoming gems" do
       should "work normally when things go well" do
         mock(@cutter).pull_spec { true }
-        mock(@cutter).find { true }
+        mock(@cutter).find_rubygem { true }
         stub(@cutter).authorize { true }
         mock(@cutter).save
 
@@ -55,7 +56,7 @@ class GemcutterTest < ActiveSupport::TestCase
 
       should "not attempt to find rubygem if spec can't be pulled" do
         mock(@cutter).pull_spec { false }
-        mock(@cutter).find.never
+        mock(@cutter).find_rubygem.never
         mock(@cutter).authorize.never
         mock(@cutter).save.never
         @cutter.process
@@ -63,7 +64,7 @@ class GemcutterTest < ActiveSupport::TestCase
 
       should "not attempt to authorize if not found" do
         mock(@cutter).pull_spec { true }
-        mock(@cutter).find { nil }
+        mock(@cutter).find_rubygem { nil }
         mock(@cutter).authorize.never
         mock(@cutter).save.never
 
@@ -72,7 +73,7 @@ class GemcutterTest < ActiveSupport::TestCase
 
       should "not attempt to save if not authorized" do
         mock(@cutter).pull_spec { true }
-        mock(@cutter).find { true }
+        mock(@cutter).find_rubygem { true }
         mock(@cutter).authorize { false }
         mock(@cutter).save.never
 
@@ -107,7 +108,7 @@ class GemcutterTest < ActiveSupport::TestCase
     context "finding rubygem" do
       should "initialize new gem if one does not exist" do
         stub(@cutter).spec.stub!.name { "some name" }
-        @cutter.find
+        @cutter.find_rubygem
 
         assert_not_nil @cutter.rubygem
       end
@@ -115,7 +116,7 @@ class GemcutterTest < ActiveSupport::TestCase
       should "bring up existing gem with matching spec" do
         @rubygem = Factory(:rubygem)
         stub(@cutter).spec.stub!.name { @rubygem.name }
-        @cutter.find
+        @cutter.find_rubygem
 
         assert_equal @rubygem, @cutter.rubygem
       end

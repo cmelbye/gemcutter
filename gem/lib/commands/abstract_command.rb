@@ -3,14 +3,24 @@ require 'rubygems/local_remote_options'
 class Gem::AbstractCommand < Gem::Command
   include Gem::LocalRemoteOptions
 
-  URL = "http://gemcutter.org"
+  def initialize(*args)
+    super
+
+    # allow override of the gemcutter host
+    add_option '--host=HOST', 'Use an alternative Gemcutter host' do |host, options|
+      @gemcutter_host = host
+    end
+  end
 
   def api_key
     Gem.configuration[:gemcutter_key]
   end
 
   def gemcutter_url
-    ENV['GEMCUTTER_URL'] || 'https://gemcutter.heroku.com'
+    url = @gemcutter_host || 'gemcutter.org'
+    url = "#{url}.gemcutter.org" unless url.index('.')
+    url = "http://#{url}"        unless url.index('://')
+    url
   end
 
   def setup

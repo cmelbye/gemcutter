@@ -407,6 +407,27 @@ class RubygemsControllerTest < ActionController::TestCase
         assert_equal 1, @rubygem.versions.size
         assert_equal "You do not have permission to push to this gem.", @response.body
       end
+
+      context "using a new subdomain" do
+        setup do
+          @subdomain_name = 'mydomain'
+          @subdomain = Factory(:subdomain, :name => @subdomain_name)
+          @request.host = "#{@subdomain_name}.gemcutter.test.host"
+
+          @request.env["RAW_POST_DATA"] = gem_file("test-0.0.0.gem").read
+          post :create
+        end
+
+        should_respond_with :success
+        should_assign_to(:_current_user) { @user }
+        should_change("the rubygem count") { Rubygem.count }
+        should_change("the subdomain rubygem count") { Rubygem.subdomain(@subdomain_name).count }
+        should_not_change("the default subdomain rubygem count") { Rubygem.default_subdomain.count }
+        should "register new gem" do
+          assert_equal @user, Rubygem.last.ownerships.first.user
+          assert_equal "Successfully registered gem: test (0.0.0)", @response.body
+        end
+      end
     end
   end
 

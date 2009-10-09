@@ -48,7 +48,8 @@ class RubygemsController < ApplicationController
   end
 
   def create
-    gemcutter = Gemcutter.new(current_user, request.body)
+    subdomain = request.host.split('.').first
+    gemcutter = Gemcutter.new(current_user, request.body, subdomain)
     gemcutter.process
     render :text => gemcutter.message, :status => gemcutter.code
   end

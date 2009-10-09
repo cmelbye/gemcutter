@@ -5,21 +5,23 @@ class Gemcutter
     include Vault::S3
   end
 
-  attr_reader :user, :spec, :message, :code, :rubygem, :body, :version, :version_id
+  attr_reader :user, :spec, :message, :code, :rubygem, :body, :version, :version_id, :subdomain
 
-  def initialize(user, body)
+  def initialize(user, body, subdomain = "gemcutter")
     @user = user
     @body = StringIO.new(body.read)
+    find_subdomain(subdomain)
   end
 
   def process
-    pull_spec and find and authorize and save
+    pull_spec and find_rubygem and authorize and save
   end
 
   def authorize
     user.rubyforge_importer? or
     rubygem.pushable? or
     rubygem.owned_by?(user) or
+    subdomain.try(:belongs_to?, user) or
     notify("You do not have permission to push to this gem.", 403)
   end
 
@@ -62,8 +64,17 @@ class Gemcutter
     end
   end
 
-  def find
-    @rubygem = Rubygem.find_or_initialize_by_name(self.spec.name)
+  def find_rubygem
+    @rubygem = Rubygem.find_or_initialize_by_name_and_subdomain_id(
+      self.spec.name,
+      self.subdomain.try(:id)
+    )
+  end
+
+  def find_subdomain(name)
+    return if name == 'gemcutter'
+    @subdomain = Subdomain.find_or_create_by_name(name)
+    @subdomain.users << @user if @subdomain.users.count.zero?
   end
 
   def self.server_path(*more)

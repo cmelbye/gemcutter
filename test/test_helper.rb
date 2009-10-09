@@ -17,6 +17,14 @@ class ActiveSupport::TestCase
   self.use_instantiated_fixtures  = false
 end
 
+class ActionController::TestCase
+  def setup_controller_request_and_response_with_gemcutter
+    setup_controller_request_and_response_without_gemcutter
+    @request.host = 'gemcutter.test.host'
+  end
+  alias_method_chain :setup_controller_request_and_response, :gemcutter
+end
+
 class Test::Unit::TestCase
   include Webrat::Matchers
   include Rack::Test::Methods

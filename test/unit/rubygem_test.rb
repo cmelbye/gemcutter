@@ -11,10 +11,9 @@ class RubygemTest < ActiveSupport::TestCase
     should_have_many :ownerships, :dependent => :destroy
     should_have_many :versions, :dependent => :destroy
     should_have_one :linkset, :dependent => :destroy
-    should_validate_uniqueness_of :name, :scoped_to => :subdomain
     should_allow_values_for :name, "rails", "awesome42", "factory_girl", "rack-test"
-    should_allow_values_for     :subdomain, "foo",  "bar"
-    should_not_allow_values_for :subdomain, "foo0", "bar.", "Baz", " foo"
+    should_belong_to :subdomain
+    should_validate_uniqueness_of :name, :scoped_to => :subdomain_id
   end
 
   context "with a rubygem" do
