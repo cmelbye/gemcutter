@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091009203023) do
+ActiveRecord::Schema.define(:version => 20091009213456) do
 
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :default => 0
@@ -35,6 +35,14 @@ ActiveRecord::Schema.define(:version => 20091009203023) do
 
   add_index "dependencies", ["rubygem_id"], :name => "index_dependencies_on_rubygem_id"
   add_index "dependencies", ["version_id"], :name => "index_dependencies_on_version_id"
+
+  create_table "downloads", :force => true do |t|
+    t.integer  "version_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "downloads", ["version_id"], :name => "index_downloads_on_version_id"
 
   create_table "linksets", :force => true do |t|
     t.integer  "rubygem_id"
@@ -119,6 +127,8 @@ ActiveRecord::Schema.define(:version => 20091009203023) do
     t.string   "api_key"
     t.string   "confirmation_token", :limit => 128
     t.string   "remember_token",     :limit => 128
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   add_index "users", ["confirmation_token", "id"], :name => "index_users_on_id_and_confirmation_token"
@@ -141,6 +151,7 @@ ActiveRecord::Schema.define(:version => 20091009203023) do
     t.boolean  "indexed",           :default => true
     t.boolean  "prerelease"
     t.integer  "position"
+    t.integer  "downloads_count",   :default => 0
   end
 
   add_index "versions", ["built_at"], :name => "index_versions_on_built_at"

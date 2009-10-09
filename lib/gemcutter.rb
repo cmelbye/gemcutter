@@ -14,22 +14,26 @@ class Gemcutter
   end
 
   def process
-    pull_spec and find_rubygem and authorize and save
+    pull_spec && find_rubygem && authorize && save
   end
 
   def authorize
-    user.rubyforge_importer? or
-    rubygem.pushable? or
-    rubygem.owned_by?(user) or
-    subdomain.try(:belongs_to?, user) or
+    import? ||
+    rubygem.pushable? ||
+    rubygem.owned_by?(user) ||
+    subdomain.try(:belongs_to?, user) ||
     notify("You do not have permission to push to this gem.", 403)
+  end
+
+  def import?
+    user.rubyforge_importer? && version.new_record?
   end
 
   def save
     if update
       write_gem
       @version_id = self.version.id
-      Delayed::Job.enqueue self
+      Delayed::Job.enqueue self, 1
       notify("Successfully registered gem: #{self.version.to_title}", 200)
     else
       notify("There was a problem saving your gem: #{rubygem.errors.full_messages}", 403)
@@ -45,8 +49,7 @@ class Gemcutter
   def update
     Rubygem.transaction do
       rubygem.build_ownership(user) unless user.try(:rubyforge_importer?)
-      rubygem.save!
-      @version = rubygem.update_attributes_from_gem_specification!(spec)
+      rubygem.update_attributes_from_gem_specification!(version, spec)
     end
     true
   rescue ActiveRecord::RecordInvalid, ActiveRecord::Rollback
@@ -64,11 +67,9 @@ class Gemcutter
     end
   end
 
-  def find_rubygem
-    @rubygem = Rubygem.find_or_initialize_by_name_and_subdomain_id(
-      self.spec.name,
-      self.subdomain.try(:id)
-    )
+  def find
+    @rubygem = Rubygem.find_or_initialize_by_name_and_subdomain_id(self.spec.name, self.subdomain.try(:id))
+    @version = @rubygem.find_or_initialize_version_from_spec(spec)
   end
 
   def find_subdomain(name)
