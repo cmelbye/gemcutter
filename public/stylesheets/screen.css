@@ -305,14 +305,13 @@ body {
   font-size: 2em;
   text-align: center;
   float: left;
+  border-radius: 8px;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
 }
 
 .main .info .statistics .chart {
   width: 678px;
-}
-
-.main .info .statistics .chart img {
-  margin-left: -105px;
 }
 
 .main .info .statistics span {

@@ -2,13 +2,11 @@ module ChartHelper
   def most_downloaded_chart(rubygems)
     downloads = rubygems.map(&:downloads)
 
-    # GoogleChart will error at if all the values are zero...
-    if downloads.all? { |count| count == 0 }
-      return ''
-    end
+    # GoogleChart will error out if all the values are zero...
+    return if downloads.all? { |count| count == 0 }
 
     chart = GoogleChart::BarChart.new do |bc|
-      bc.width       = 530
+      bc.width       = 666
       bc.height      = 360
       bc.title       = 'Most Downloads'
       bc.orientation = :horizontal
